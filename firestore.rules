@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "mail.nasiya@gmail.com" ||
+        request.auth.token.email == "leadpilot25@gmail.com" ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['name', 'email', 'role']);
+    }
+
+    function isValidLead(data) {
+      return data.keys().hasAll(['firstName', 'phone', 'followUpDate', 'assignedTo', 'status']);
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data);
+    }
+
+    match /leads/{leadId} {
+      allow create: if isValidLead(request.resource.data);
+      allow read: if isAdmin() || (isSignedIn() && resource.data.assignedTo == request.auth.uid);
+      allow update: if isAdmin() || (isSignedIn() && resource.data.assignedTo == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    match /activities/{activityId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /clients/{clientId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}
