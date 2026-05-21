@@ -148,16 +148,8 @@ export function DesktopSidebar() {
   return (
     <>
       <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-72 bg-white border-r border-neutral-100/80 z-50 p-8">
-        <div className="flex items-center gap-3 mb-10 px-2">
-          <PaperPlaneLogo 
-            containerClassName="w-10 h-10 bg-[#131d26] rounded-full flex items-center justify-center shadow-md shrink-0" 
-            iconSizeClassName="w-6 h-6" 
-          />
-          <div>
-            <h1 className="text-xl font-bold text-[#111827] tracking-tight font-sans leading-none">LeadPilot</h1>
-            <p className="text-[9px] font-bold text-[#10B981] uppercase tracking-[0.25em] mt-1 font-sans">LEAD ENGINE</p>
-          </div>
-        </div>
+        {/* Deleted logo from left side as requested */}
+        <div className="mb-6" />
 
         <button 
           onClick={() => setIsModalOpen(true)}

@@ -57,16 +57,12 @@ export default function Dashboard() {
     return unsubscribe;
   }, [user, role]);
 
-  const todayStr = format(new Date(), "yyyy-MM-dd");
-  const today = new Date();
-  today.setHours(0,0,0,0);
+  const todayStr = new Date().toISOString().split("T")[0];
 
   // Stats Calculations
   const missedFollowups = leads.filter(l => {
     if (!l.followUpDate) return false;
-    const d = new Date(l.followUpDate);
-    d.setHours(0,0,0,0);
-    return d < today && l.status !== "closed" && l.status !== "inactive" && !l.followUpCompleted;
+    return l.followUpDate < todayStr && l.status !== "closed" && l.status !== "inactive" && !l.followUpCompleted;
   });
 
   const todayFollowups = leads.filter(l => {

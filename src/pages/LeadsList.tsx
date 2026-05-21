@@ -63,18 +63,14 @@ export default function LeadsList() {
         return dateB - dateA;
       });
       
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
       const todayString = new Date().toISOString().split("T")[0];
 
       if (filterType === "today") {
-        data = data.filter((l: any) => l.followUpDate === todayString && l.status !== "closed" && l.status !== "inactive" && !l.followUpCompleted);
+        data = data.filter((l: any) => l.followUpDate === todayString);
       } else if (filterType === "missed" || filterType === "overdue") {
         data = data.filter((l: any) => {
           if (!l.followUpDate) return false;
-          const d = new Date(l.followUpDate);
-          d.setHours(0, 0, 0, 0);
-          return d < today && l.status !== "closed" && l.status !== "inactive" && !l.followUpCompleted;
+          return l.followUpDate < todayString && l.status !== "closed" && l.status !== "inactive" && !l.followUpCompleted;
         });
       } else if (filterType === "meetings") {
         data = data.filter((l: any) => 
@@ -84,7 +80,7 @@ export default function LeadsList() {
       } else if (filterType === "closed") {
         data = data.filter((l: any) => l.status === "closed");
       } else if (filterType === "upcoming") {
-        data = data.filter((l: any) => new Date(l.followUpDate) > today);
+        data = data.filter((l: any) => l.followUpDate > todayString);
       }
 
       if (statusFilter) {
