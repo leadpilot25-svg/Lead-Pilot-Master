@@ -1,83 +1,58 @@
-import { Home, Calendar, Users, Settings, Plus, Search, Bell, LogOut, Sliders, Clock, TrendingUp } from "lucide-react";
+import { Home, Users, Settings, Plus, Search, LogOut, Sliders, Clock } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "motion/react";
 import { useState } from "react";
 import AddLeadModal from "./AddLeadModal";
 import { useFirebase } from "../contexts/FirebaseProvider";
 import { auth } from "../lib/firebase";
-import PaperPlaneLogo from "./PaperPlaneLogo";
 
 export function Header() {
   const { user } = useFirebase();
   const location = useLocation();
 
-  // Map route paths to premium page titles
   const getPageTitle = (pathname: string) => {
-    if (pathname === "/") return "Today's Action Queue";
-    if (pathname.startsWith("/leads")) {
-      if (pathname === "/leads/new") return "Add New Lead";
-      if (pathname.includes("/leads/")) return "Lead Inspection";
-      return "Leads Directory";
-    }
-    if (pathname === "/today") return "Task Manager";
-    if (pathname === "/funnel") return "Pipeline Funnel";
-    if (pathname === "/profile") return "User Profile";
-    if (pathname === "/admin") return "Admin Center";
-    return "LeadPilot Dashboard";
+    if (pathname === "/") return "Today's Tasks";
+    if (pathname.startsWith("/leads")) return "Leads";
+    if (pathname === "/today") return "Tasks";
+    if (pathname === "/funnel") return "Pipeline";
+    if (pathname === "/profile") return "Profile";
+    if (pathname === "/admin") return "Admin";
+    return "LeadPilot";
   };
 
   return (
-    <header className="fixed top-0 left-0 lg:left-72 right-0 h-16 bg-white border-b border-neutral-100 z-40 px-4 md:px-8 flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.05)] transition-all duration-200">
-      {/* Left side: Logo on mobile, title on desktop */}
-      <div className="flex items-center gap-3">
-        {/* On mobile: Logo icon, on desktop: Sidebar has it, so we can show Page Title instead */}
-        <div className="flex lg:hidden items-center gap-2.5">
-          <PaperPlaneLogo 
-            containerClassName="w-9 h-9 bg-[#131d26] rounded-full flex items-center justify-center shadow-inner shrink-0" 
-            iconSizeClassName="w-5.5 h-5.5" 
-          />
-          <span className="text-base font-bold text-[#111827] tracking-tight font-sans">LeadPilot</span>
-        </div>
-        
-        {/* Page Title on Desktop */}
-        <h2 className="hidden lg:block text-sm font-extrabold text-neutral-800 tracking-tight font-sans">
-          {getPageTitle(location.pathname)}
-        </h2>
-      </div>
+    <header className="fixed top-0 left-0 lg:left-72 right-0 h-16 bg-white border-b z-40 px-4 md:px-8 flex items-center justify-between">
 
-      {/* Right side utilities */}
+      {/* LEFT SIDE */}
+      <h2 className="text-sm font-extrabold text-neutral-800">
+        {getPageTitle(location.pathname)}
+      </h2>
+
+      {/* RIGHT SIDE */}
       <div className="flex items-center gap-4">
-        {/* Search button with sleek hover action */}
+
         <Link 
           to="/leads"
-          className="p-2 text-neutral-400 hover:text-[#10B981] hover:bg-neutral-50 rounded-xl transition-all duration-200 active:scale-95"
-          title="Search Leads"
+          className="p-2 text-neutral-400 hover:text-[#10B981] hover:bg-neutral-50 rounded-xl"
         >
           <Search size={18} />
         </Link>
-        
-        {/* Divider */}
+
         <div className="w-px h-6 bg-neutral-100 hidden md:block" />
 
-        {/* User profile avatar info */}
         <Link 
           to="/profile" 
-          className="flex items-center gap-2.5 group p-1 pr-2 rounded-full hover:bg-neutral-50 transition-all duration-200"
+          className="flex items-center gap-2 p-1 rounded-full hover:bg-neutral-50"
         >
-          <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center overflow-hidden border border-neutral-200 shadow-sm transition-transform duration-200 group-hover:scale-105 group-hover:shadow">
+          <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center border">
             {user?.photoURL ? (
-              <img src={user.photoURL} alt={user.displayName || "User"} className="object-cover w-full h-full" referrerPolicy="no-referrer" />
+              <img src={user.photoURL} className="object-cover w-full h-full rounded-full" />
             ) : (
-              <span className="text-xs font-bold text-neutral-500">
-                {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "?"}
+              <span className="text-xs font-bold">
+                {user?.displayName?.[0] || "?"}
               </span>
             )}
           </div>
-          {user && (
-            <span className="hidden md:block text-xs font-black text-neutral-700 max-w-[120px] truncate group-hover:text-[#10B981] transition-colors font-sans">
-              {user.displayName || user.email?.split("@")[0]}
-            </span>
-          )}
         </Link>
       </div>
     </header>
@@ -86,7 +61,6 @@ export function Header() {
 
 export function BottomNav() {
   const location = useLocation();
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const navItems = [
     { path: "/", icon: Home, label: "Home" },
@@ -96,114 +70,91 @@ export function BottomNav() {
   ];
 
   return (
-    <>
-      <nav className="lg:hidden fixed bottom-6 left-4 right-4 bg-white/95 backdrop-blur-xl border border-neutral-100 px-6 py-4.5 z-50 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
-        <div className="flex justify-between items-center relative">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            const Icon = item.icon;
-            
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className="relative flex flex-col items-center group flex-1"
-              >
-                <Icon
-                  size={20}
-                  className={isActive ? "text-[#10B981] font-bold" : "text-neutral-300 group-hover:text-emerald-400 transition-colors"}
-                />
-                <span className={`text-[10px] font-black uppercase tracking-tight mt-1 transition-all ${isActive ? "text-[#10B981] scale-105" : "text-neutral-400"}`}>
-                  {item.label}
-                </span>
-                {isActive && (
-                  <motion.div
-                    layoutId="nav-dot"
-                    className="absolute -bottom-2 w-1.5 h-1.5 bg-[#10B981] rounded-full"
-                  />
-                )}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-      <AddLeadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-    </>
+    <nav className="lg:hidden fixed bottom-6 left-4 right-4 bg-white border px-6 py-4 z-50 rounded-3xl shadow-lg">
+      <div className="flex justify-between items-center">
+
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          const Icon = item.icon;
+
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className="flex flex-col items-center flex-1"
+            >
+              <Icon size={20} className={isActive ? "text-[#10B981]" : "text-neutral-300"} />
+              <span className={`text-[10px] mt-1 ${isActive ? "text-[#10B981]" : "text-neutral-400"}`}>
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+
+      </div>
+    </nav>
   );
 }
 
 export function DesktopSidebar() {
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { user } = useFirebase();
 
   const navItems = [
     { path: "/", icon: Home, label: "Home" },
-    { path: "/leads", icon: Users, label: "Leads List" },
-    { path: "/today", icon: Clock, label: "Daily Tasks" },
-    { path: "/funnel", icon: Sliders, label: "Pipeline Funnel" },
-    { path: "/admin", icon: Settings, label: "Admin Center" },
+    { path: "/leads", icon: Users, label: "Leads" },
+    { path: "/today", icon: Clock, label: "Tasks" },
+    { path: "/funnel", icon: Sliders, label: "Pipeline" },
+    { path: "/admin", icon: Settings, label: "Admin" },
   ];
 
   return (
-    <>
-      <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-72 bg-white border-r border-neutral-100/80 z-50 p-8">
-        {/* Deleted logo from left side as requested */}
-        <div className="mb-6" />
+    <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-72 bg-white border-r p-8">
 
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="w-full bg-[#10B981] hover:bg-[#059669] text-white font-extrabold py-3.5 rounded-2xl shadow-lg shadow-emerald-100/80 flex items-center justify-center gap-2.5 transition-all mb-8 active:scale-[0.98] text-sm tracking-wide transform hover:-translate-y-0.5 duration-200"
-        >
-          <Plus size={18} strokeWidth={3} />
-          ADD NEW LEAD
-        </button>
+      {/* ADD LEAD BUTTON */}
+      <button 
+        onClick={() => setIsModalOpen(true)}
+        className="w-full bg-[#10B981] text-white py-3 rounded-xl mb-8 font-bold"
+      >
+        + Add Lead
+      </button>
 
-        <nav className="flex-1 space-y-2">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all font-bold text-sm group ${
-                  isActive 
-                    ? "bg-emerald-50/70 text-[#10B981] shadow-sm shadow-emerald-50/20" 
-                    : "text-neutral-400 hover:bg-neutral-50 hover:text-neutral-700"
-                }`}
-              >
-                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="tracking-tight">{item.label}</span>
-                {isActive && (
-                   <motion.div layoutId="sidebar-active" className="ml-auto w-1.5 h-1.5 bg-[#10B981] rounded-full" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+      {/* NAVIGATION */}
+      <nav className="flex-1 space-y-2">
 
-        <div className="mt-auto pt-8 border-t border-neutral-50 space-y-4 font-sans">
-          <div className="flex items-center gap-3 px-2">
-             <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center border border-neutral-200 overflow-hidden shadow-sm">
-                {user?.photoURL ? <img src={user.photoURL} alt="" /> : <span className="font-extrabold text-neutral-400">{user?.displayName?.[0] || "?"}</span>}
-             </div>
-             <div className="flex-1 min-w-0">
-               <p className="text-sm font-black text-neutral-900 truncate tracking-tight">{user?.displayName || "Agent Account"}</p>
-               <p className="text-[10px] font-bold text-neutral-400 truncate uppercase tracking-widest">{user?.email}</p>
-             </div>
-          </div>
-          <button 
-            className="flex items-center gap-3 px-4 py-3 text-neutral-300 hover:text-rose-500 font-extrabold transition-colors text-xs w-full uppercase tracking-[0.15em] hover:bg-rose-50/20 rounded-xl"
-            onClick={() => auth.signOut()}
-          >
-            <LogOut size={16} />
-            SIGN OUT
-          </button>
-        </div>
-      </aside>
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          const Icon = item.icon;
+
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition ${
+                isActive 
+                  ? "bg-emerald-50 text-[#10B981]" 
+                  : "text-neutral-500 hover:bg-neutral-50"
+              }`}
+            >
+              <Icon size={18} />
+              {item.label}
+            </Link>
+          );
+        })}
+
+      </nav>
+
+      {/* LOGOUT */}
+      <button 
+        className="flex items-center gap-2 text-red-500 mt-6"
+        onClick={() => auth.signOut()}
+      >
+        <LogOut size={16} />
+        Sign Out
+      </button>
+
       <AddLeadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-    </>
+    </aside>
   );
 }
 
